@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Create New Masterclass - Erdem Cooking School{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-3">
+    <div class="col-12 col-lg-9 col-xl-8">
+
+        <div class="mb-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="{{ url_for('managerProfile') }}"
+                            class="text-decoration-none">Manager Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">New Masterclass</li>
+                </ol>
+            </nav>
+            <h1 class="h2 fw-bold mb-1">Create a Culinary Masterclass</h1>
+            <p class="text-secondary">Fill in the details below to add a new course to Erdem Cooking School's weekly
+                catalog.</p>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4 bg-white p-4 p-md-5">
+            <form action="{{ url_for('createClass') }}" method="POST" enctype="multipart/form-data" novalidate>
+
+                <div class="mb-4">
+                    <label for="title" class="form-label fw-bold">Masterclass Title</label>
+                    <input type="text" class="form-control form-control-lg" id="title" name="title"
+                        value="{{ formData.get('title', '') }}" required minlength="3">
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label for="cuisine" class="form-label fw-bold">Cuisine Country</label>
+                        <input type="text" class="form-control" id="cuisine" name="cuisine"
+                            value="{{ formData.get('cuisine', '') }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="difficulty" class="form-label fw-bold">Difficulty Level</label>
+                        <select class="form-select" id="difficulty" name="difficulty" required>
+                            <option value="Beginner" {% if formData.get('difficulty')=='Beginner' %}selected{% endif %}>
+                                Beginner</option>
+                            <option value="Intermediate" {% if formData.get('difficulty')=='Intermediate' or not
+                                formData.get('difficulty') %}selected{% endif %}>Intermediate</option>
+                            <option value="Advanced" {% if formData.get('difficulty')=='Advanced' %}selected{% endif %}>
+                                Advanced</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label for="duration" class="form-label fw-bold">Duration (Minutes)</label>
+                        <input type="number" class="form-control" id="duration" name="duration"
+                            value="{{ formData.get('duration', '120') }}" min="30" max="360" step="15" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="dietary" class="form-label fw-bold">Dietary Specification</label>
+                        <select class="form-select" id="dietary" name="dietary_category" required>
+                            <option value="Standard" {% if formData.get('dietary_category')=='Standard' or not
+                                formData.get('dietary_category') %}selected{% endif %}>Standard</option>
+                            <option value="Vegetarian" {% if formData.get('dietary_category')=='Vegetarian' %}selected{%
+                                endif %}>Vegetarian</option>
+                            <option value="Vegan" {% if formData.get('dietary_category')=='Vegan' %}selected{% endif %}>
+                                Vegan</option>
+                            <option value="Gluten-free" {% if formData.get('dietary_category')=='Gluten-free'
+                                %}selected{% endif %}>Gluten-free</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="chef" class="form-label fw-bold">Instructor / Chef</label>
+                        <input type="text" class="form-control" id="chef" name="chef"
+                            value="{{ formData.get('chef', '') }}" required>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="ingredients" class="form-label fw-bold">
+                        Main Ingredients <span class="badge bg-warning text-dark ms-1">Minimum 4 required</span>
+                    </label>
+                    <textarea class="form-control font-monospace small" id="ingredients" name="ingredients" rows="4"
+                        required>{{ formData.get('ingredients', '') }}</textarea>
+                    <div class="form-text">List at least 4 key ingredients separated by newlines or commas.</div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="description" class="form-label fw-bold">Course Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="4"
+                        required>{{ formData.get('description', '') }}</textarea>
+                </div>
+
+                <div class="card border rounded-3 p-3 bg-light mb-4">
+                    <h2 class="h6 fw-bold text-dark mb-3"><i class="bi bi-images text-warning me-1"></i> Three Representative Photos</h2>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="photo1" class="form-label small fw-semibold">Photo 1 (Cover)</label>
+                            <input type="file" class="form-control form-control-sm" id="photo1" name="photo1" accept="image/*" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="photo2" class="form-label small fw-semibold">Photo 2 (Preparation)</label>
+                            <input type="file" class="form-control form-control-sm" id="photo2" name="photo2" accept="image/*" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="photo3" class="form-label small fw-semibold">Photo 3 (Plating / Result)</label>
+                            <input type="file" class="form-control form-control-sm" id="photo3" name="photo3" accept="image/*" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                    <a href="{{ url_for('managerProfile') }}" class="btn btn-outline-secondary">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-warning fw-bold px-4 py-2 shadow-sm">
+                        <i class="bi bi-check2-circle me-1"></i> Save Class &amp; Schedule Sessions
+                    </button>
+                </div>
+
+            </form>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

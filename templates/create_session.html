@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if sessionData %}Edit Session - {{ cookingClass.title }}{% else %}Schedule Session - {{ cookingClass.title }}{% endif %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-3">
+  <div class="col-12 col-lg-8">
+    
+    <div class="mb-4">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a href="{{ url_for('managerProfile') }}" class="text-decoration-none">Manager Dashboard</a></li>
+          <li class="breadcrumb-item"><a href="{{ url_for('classDetail', classId=cookingClass.id) }}" class="text-decoration-none">{{ cookingClass.title }}</a></li>
+          <li class="breadcrumb-item active" aria-current="page">{% if sessionData %}Edit Session{% else %}Schedule Session{% endif %}</li>
+        </ol>
+      </nav>
+      <h1 class="h2 fw-bold mb-1">{% if sessionData %}Edit Class Session{% else %}Schedule a Class Session{% endif %}</h1>
+      <p class="text-secondary">Set the weekly day, start time, session name, and student capacity.</p>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 bg-light p-3 mb-4 d-flex flex-row align-items-center gap-3">
+      <div class="bg-warning text-dark p-3 rounded-3 fs-3 d-flex align-items-center justify-content-center">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19 19.002v1.998a1 1 0 0 1 -.883 .993l-.117 .007h-12a1 1 0 0 1 -1 -1v-1.994a1 1 0 0 1 1 -1l12 -.004a1 1 0 0 1 1 1" />
+          <path d="M12 2a5 5 0 0 1 4.533 2.888l.06 .137l.136 -.009a5 5 0 0 1 4.99 3.477l.063 .213a5 5 0 0 1 -2.696 5.831l-.087 .037v1.428a1 1 0 0 1 -1 1l-12 .004a1 1 0 0 1 -.993 -.883l-.007 -.117v-1.433l-.123 -.055a5 5 0 0 1 -2.6 -3.001l-.064 -.223a5 5 0 0 1 5.193 -6.27l.066 -.142a5 5 0 0 1 4.302 -2.877z" />
+        </svg>
+      </div>
+      <div>
+        <h2 class="h5 fw-bold mb-1 text-dark">{{ cookingClass.title }}</h2>
+        <span class="small text-muted">
+          Chef {{ cookingClass.chef }} &bull; {{ cookingClass.duration }} min &bull; {{ cookingClass.cuisine }}
+        </span>
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 bg-white p-4 p-md-5">
+      <form action="{% if sessionData %}{{ url_for('editSession', sessionId=sessionData.id) }}{% else %}{{ url_for('createSession', classId=cookingClass.id) }}{% endif %}" method="POST" novalidate>
+        
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <label for="dayOfWeek" class="form-label fw-bold">Day of the Week</label>
+            <select class="form-select" id="dayOfWeek" name="day_of_week" required>
+              {% for day in daysOfWeek %}
+              <option value="{{ day }}" {% if formData.get('day_of_week') == day %}selected{% endif %}>{{ day }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label for="startTime" class="form-label fw-bold">Start Time</label>
+            <input type="time" class="form-control" id="startTime" name="start_time" value="{{ formData.get('start_time', '18:00') }}" required>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+          <div class="col-md-7">
+            <label for="kitchen" class="form-label fw-bold">Session Name</label>
+            <input type="text" class="form-control" id="kitchen" name="kitchen" value="{{ formData.get('kitchen') or defaultSessionName or cookingClass.title }}" required>
+            <div class="form-text">Defaults to masterclass title with session number.</div>
+          </div>
+
+          <div class="col-md-5">
+            <label for="capacity" class="form-label fw-bold">Student Capacity</label>
+            <input type="number" class="form-control" id="capacity" name="capacity" value="{{ formData.get('capacity', '4') }}" min="1" max="12" required>
+            <div class="form-text">Max student seats (typically 3 to 4)</div>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+          <a href="{{ url_for('managerProfile') }}" class="btn btn-outline-secondary">
+            Cancel
+          </a>
+          <button type="submit" class="btn btn-warning fw-bold px-4 py-2 shadow-sm">
+            {% if sessionData %}
+            <i class="bi bi-check-lg me-1"></i> Save Changes
+            {% else %}
+            <i class="bi bi-calendar-plus me-1"></i> Add Session to Schedule
+            {% endif %}
+          </button>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block title %}Manager Dashboard - Erdem Cooking School{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-lg-8">
+        <h1 class="h2 fw-bold mb-1">Manager Dashboard</h1>
+        <p class="text-secondary mb-0">
+            Welcome, <strong>{{ current_user.firstName }} {{ current_user.lastName }}</strong>! Oversee your culinary
+            courses, weekly schedules, student rosters, and waiting lists.
+        </p>
+    </div>
+    <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+        <a href="{{ url_for('createClass') }}" class="btn btn-warning fw-bold shadow-sm">
+            <i class="bi bi-plus-circle me-1"></i> Add New Masterclass
+        </a>
+    </div>
+</div>
+
+<h2 class="h4 fw-bold mb-3">Your Masterclasses &amp; Student Rosters</h2>
+
+{% if managedData %}
+<div class="d-flex flex-column gap-4 mb-5">
+    {% for item in managedData %}
+    {% set c = item.class %}
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+        <div
+            class="card-header bg-light border-bottom p-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <div class="d-flex flex-wrap gap-2 mb-1">
+                    <span class="badge bg-warning text-dark fw-semibold">{{ c.cuisine }}</span>
+                    <span class="badge bg-secondary">{{ c.difficulty }}</span>
+                    {% if c.dietary_category and c.dietary_category != 'None' %}
+                    <span class="badge bg-info text-dark">{{ c.dietary_category }}</span>
+                    {% endif %}
+                </div>
+                <h3 class="h5 fw-bold text-dark mb-1">{{ c.title }}</h3>
+                <span class="small text-muted">Chef {{ c.chef }} &bull; {{ c.duration }} minutes &bull;
+                    {% if c.avg_rating %}★ {{ c.avg_rating }} ({{ c.total_ratings }} reviews){% else %}No reviews{%
+                    endif %}
+                </span>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <a href="{{ url_for('classDetail', classId=c.id) }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-eye me-1"></i> Public Page
+                </a>
+                <a href="{{ url_for('createSession', classId=c.id) }}" class="btn btn-sm btn-warning fw-bold">
+                    <i class="bi bi-plus-lg me-1"></i> Add Session
+                </a>
+                <form action="{{ url_for('deleteClass', classId=c.id) }}" method="POST" class="d-inline"
+                    onsubmit="return confirm('Permanently delete this masterclass and all its image files? (Allowed only if no students are enrolled in its sessions).');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Masterclass">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card-body p-4">
+            <h4 class="h6 fw-bold text-uppercase text-muted mb-3">Scheduled Sessions &amp; Attendees</h4>
+
+            {% if item.sessions %}
+            <div class="d-flex flex-column gap-3">
+                {% for s in item.sessions %}
+                <div class="border rounded-3 p-3 bg-light">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                        <div>
+                            <strong class="text-dark fs-6">{{ s.day_of_week }} at {{ s.start_time }}</strong>
+                            <span class="badge bg-white text-dark border ms-2">{{ s.kitchen }}</span>
+                            {% if s.isPast %}
+                            <span class="badge bg-secondary ms-1">Concluded</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <span
+                                class="badge {% if s.available_seats > 0 %}bg-success{% else %}bg-danger{% endif %} text-white">
+                                {{ s.enrolled_count }} / {{ s.capacity }} Booked
+                            </span>
+                            {% if s.waiting_count > 0 %}
+                            <span class="badge bg-warning text-dark">
+                                {{ s.waiting_count }} Waitlisted
+                            </span>
+                            {% endif %}
+                            <a href="{{ url_for('editSession', sessionId=s.id) }}" class="btn btn-sm btn-outline-secondary py-0 px-2" title="Edit Session">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form action="{{ url_for('deleteSession', sessionId=s.id) }}" method="POST" class="d-inline"
+                                onsubmit="return confirm('Delete this session? If students are enrolled, cancellation notifications will be processed.');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2"
+                                    title="Delete Session">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-7">
+                            <span class="small fw-semibold text-secondary d-block mb-1">Enrolled Students:</span>
+                            {% if s.students %}
+                            <ul class="list-group list-group-flush bg-white rounded border">
+                                {% for st in s.students %}
+                                <li
+                                    class="list-group-item py-1 px-3 d-flex justify-content-between align-items-center small">
+                                    <span><i class="bi bi-person me-1 text-muted"></i>{{ st.first_name }} {{
+                                        st.last_name }}</span>
+                                    <span class="text-muted">{{ st.email }}</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <div class="small text-muted fst-italic p-2 bg-white rounded border">
+                                No students enrolled in this session yet.
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-5">
+                            <span class="small fw-semibold text-secondary d-block mb-1">Waiting List:</span>
+                            {% if s.waitingStudents %}
+                            <ol class="list-group list-group-numbered bg-white rounded border">
+                                {% for ws in s.waitingStudents %}
+                                <li
+                                    class="list-group-item py-1 px-3 small d-flex justify-content-between align-items-center">
+                                    <div class="ms-2 me-auto">
+                                        {{ ws.first_name }} {{ ws.last_name }}
+                                    </div>
+                                    <span class="text-muted">{{ ws.email }}</span>
+                                </li>
+                                {% endfor %}
+                            </ol>
+                            {% else %}
+                            <div class="small text-muted fst-italic p-2 bg-white rounded border">
+                                Waiting list is empty.
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="p-3 text-center text-muted bg-white border rounded-3">
+                <p class="small mb-2">No weekly sessions scheduled for this class yet.</p>
+                <a href="{{ url_for('createSession', classId=c.id) }}"
+                    class="btn btn-sm btn-outline-warning fw-bold">
+                    Schedule First Session
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5 bg-white rounded-4 shadow-sm border p-4 mb-4">
+    <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="currentColor" class="text-warning d-block mx-auto mb-3">
+      <path d="M19 19.002v1.998a1 1 0 0 1 -.883 .993l-.117 .007h-12a1 1 0 0 1 -1 -1v-1.994a1 1 0 0 1 1 -1l12 -.004a1 1 0 0 1 1 1" />
+      <path d="M12 2a5 5 0 0 1 4.533 2.888l.06 .137l.136 -.009a5 5 0 0 1 4.99 3.477l.063 .213a5 5 0 0 1 -2.696 5.831l-.087 .037v1.428a1 1 0 0 1 -1 1l-12 .004a1 1 0 0 1 -.993 -.883l-.007 -.117v-1.433l-.123 -.055a5 5 0 0 1 -2.6 -3.001l-.064 -.223a5 5 0 0 1 5.193 -6.27l.066 -.142a5 5 0 0 1 4.302 -2.877z" />
+    </svg>
+    <h3 class="h4 fw-bold">You haven't created any masterclasses yet</h3>
+    <p class="text-secondary mb-3">Start by creating your first cooking masterclass with description, photos, and
+        ingredients.</p>
+    <a href="{{ url_for('createClass') }}" class="btn btn-warning fw-bold px-4 rounded-pill">
+        Create Your First Class
+    </a>
+</div>
+{% endif %}
+{% endblock %}

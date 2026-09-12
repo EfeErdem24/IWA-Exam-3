@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+
+{% block title %}My Enrollments - Erdem Cooking School{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+  <div class="col-md-8">
+    <h1 class="h2 fw-bold mb-1">Student Dashboard</h1>
+    <p class="text-secondary mb-0">
+      Welcome back, <strong>{{ current_user.firstName }} {{ current_user.lastName }}</strong>! Manage your weekly
+      masterclasses, ratings, and waiting lists.
+    </p>
+  </div>
+  <div class="col-md-4 text-md-end mt-3 mt-md-0">
+      <span class="badge bg-warning text-dark px-3 py-2 fs-6 rounded-pill">
+        <i class="bi bi-calendar-check-fill me-1"></i> {{ upcomingEnrollments|length + waitingLists|length }} / 4 Active Bookings
+      </span>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 mb-5 bg-white p-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-calendar-check-fill text-warning fs-4"></i>
+      <h2 class="h5 fw-bold mb-0">Upcoming Confirmed Sessions</h2>
+    </div>
+    <span class="small text-muted">Max 4 simultaneous bookings allowed (including waiting lists)</span>
+  </div>
+
+  {% if upcomingEnrollments %}
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th scope="col">Masterclass</th>
+          <th scope="col">Schedule</th>
+          <th scope="col">Session</th>
+          <th scope="col" class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in upcomingEnrollments %}
+        <tr>
+          <td>
+            <a href="{{ url_for('classDetail', classId=e.class_id) }}" class="fw-bold text-dark text-decoration-none">
+              {{ e.title }}
+            </a>
+            <div class="small text-muted">
+              <span class="badge bg-light text-dark border me-1">{{ e.cuisine }}</span>
+              Chef {{ e.chef }}
+            </div>
+          </td>
+          <td>
+            <div class="fw-semibold text-dark">{{ e.day_of_week }}</div>
+            <div class="small text-muted">{{ e.start_time }} ({{ e.duration }} min)</div>
+          </td>
+          <td>
+            <span class="badge bg-light text-dark border">{{ e.kitchen }}</span>
+          </td>
+          <td class="text-end">
+            {% if e.can_cancel %}
+            <form action="{{ url_for('cancelSession', sessionId=e.session_id) }}" method="POST" class="d-inline"
+              onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+              <button type="submit" class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-x-circle me-1"></i> Cancel Booking
+              </button>
+            </form>
+            {% else %}
+            <span class="badge bg-secondary-subtle text-secondary border py-2 px-2"
+              title="Cancellations are locked within 12 hours of the start time.">
+              <i class="bi bi-lock-fill me-1"></i> &lt; 12h (Locked)
+            </span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="text-center py-4 text-muted">
+    <i class="bi bi-calendar-plus fs-2 text-warning d-block mb-2"></i>
+    <p class="mb-3">You currently have no upcoming cooking sessions booked.</p>
+    <a href="{{ url_for('classesCatalog') }}" class="btn btn-warning fw-bold px-4 rounded-pill">
+      Browse Masterclasses
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 mb-5 bg-white p-4">
+  <div class="d-flex align-items-center gap-2 mb-4 pb-2 border-bottom">
+    <i class="bi bi-award-fill text-warning fs-4"></i>
+    <h2 class="h5 fw-bold mb-0">Past Sessions &amp; Your Reviews</h2>
+  </div>
+
+  {% if pastEnrollments %}
+  <div class="row g-4">
+    {% for e in pastEnrollments %}
+    <div class="col-12 col-md-6">
+      <div class="card border rounded-3 p-3 bg-light h-100 d-flex flex-column justify-content-between">
+        <div>
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <h3 class="h6 fw-bold mb-0 text-dark">{{ e.title }}</h3>
+            <span class="badge bg-secondary">Concluded</span>
+          </div>
+          <p class="small text-muted mb-3">
+            Attended on {{ e.day_of_week }} at {{ e.start_time }} &bull; Chef {{ e.chef }}
+          </p>
+
+          {% if e.user_rating %}
+          <div class="p-3 bg-white border rounded-3">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <span class="small fw-semibold text-dark">Your Rating:</span>
+              <div class="d-flex align-items-center gap-2">
+                <div class="text-warning">
+                  {% for star in range(e.user_rating) %}
+                  <i class="bi bi-star-fill"></i>
+                  {% endfor %}
+                  {% for emptyStar in range(5 - e.user_rating) %}
+                  <i class="bi bi-star text-muted opacity-50"></i>
+                  {% endfor %}
+                </div>
+                <button class="btn btn-sm btn-outline-secondary py-0 px-2 small" type="button" data-bs-toggle="collapse" data-bs-target="#editReview{{ e.session_id }}">
+                  <i class="bi bi-pencil-square"></i> Edit
+                </button>
+              </div>
+            </div>
+            {% if e.user_comment %}
+            <p class="small text-secondary mb-0 fst-italic">"{{ e.user_comment }}"</p>
+            {% else %}
+            <p class="small text-muted mb-0 fst-italic">No written comment provided.</p>
+            {% endif %}
+
+            <div class="collapse mt-3 pt-3 border-top" id="editReview{{ e.session_id }}">
+              <form action="{{ url_for('submitRating', sessionId=e.session_id) }}" method="POST">
+                <div class="mb-2">
+                  <label class="form-label small fw-semibold text-dark mb-1">Your Rating</label>
+                  <select name="score" class="form-select form-select-sm review-score-select" required>
+                    <option value="5" {% if e.user_rating == 5 %}selected{% endif %}>5 ★</option>
+                    <option value="4" {% if e.user_rating == 4 %}selected{% endif %}>4 ★</option>
+                    <option value="3" {% if e.user_rating == 3 %}selected{% endif %}>3 ★</option>
+                    <option value="2" {% if e.user_rating == 2 %}selected{% endif %}>2 ★</option>
+                    <option value="1" {% if e.user_rating == 1 %}selected{% endif %}>1 ★</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold text-dark mb-1">Comments</label>
+                  <textarea name="comment" class="form-control form-control-sm review-comment-box" rows="4" placeholder="Share your experience (what you cooked, techniques learned, chef feedback)">{{ e.user_comment or '' }}</textarea>
+                </div>
+                <button type="submit" class="btn btn-sm btn-warning fw-bold w-100">
+                  Save Changes
+                </button>
+              </form>
+            </div>
+          </div>
+          {% else %}
+          <form action="{{ url_for('submitRating', sessionId=e.session_id) }}" method="POST"
+            class="p-3 bg-white border rounded-3">
+            <div class="mb-2">
+              <label class="form-label small fw-semibold text-dark mb-1">Leave a Review</label>
+              <select name="score" class="form-select form-select-sm review-score-select" required>
+                <option value="" disabled selected>Select Score</option>
+                <option value="5">5 ★ (Exceptional)</option>
+                <option value="4">4 ★ (Very Good)</option>
+                <option value="3">3 ★ (Good)</option>
+                <option value="2">2 ★ (Fair)</option>
+                <option value="1">1 ★ (Poor)</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold text-dark mb-1">Comments</label>
+              <textarea name="comment" class="form-control form-control-sm review-comment-box" rows="4"
+                placeholder="Share your experience (what you cooked, techniques learned, chef feedback)..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-sm btn-warning fw-bold w-100">
+              Submit Review
+            </button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-4 text-muted">
+    <p class="mb-0">You have not completed any masterclasses yet.</p>
+  </div>
+  {% endif %}
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 mb-4 bg-white p-4">
+  <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+    <i class="bi bi-hourglass-split text-warning fs-4"></i>
+    <h2 class="h5 fw-bold mb-0">Your Waiting Lists</h2>
+  </div>
+
+  {% if waitingLists %}
+  <div class="table-responsive">
+    <table class="table align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th scope="col">Masterclass</th>
+          <th scope="col">Schedule</th>
+          <th scope="col">Queue Status</th>
+          <th scope="col" class="text-end">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for w in waitingLists %}
+        <tr>
+          <td>
+            <a href="{{ url_for('classDetail', classId=w.class_id) }}" class="fw-bold text-dark text-decoration-none">
+              {{ w.title }}
+            </a>
+            <div class="small text-muted">Chef {{ w.chef }}</div>
+          </td>
+          <td>
+            <div class="fw-semibold text-dark">{{ w.day_of_week }}</div>
+            <div class="small text-muted">{{ w.start_time }} &bull; {{ w.kitchen }}</div>
+          </td>
+          <td>
+            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-semibold">
+              Queue Position #{{ w.position }}
+            </span>
+          </td>
+          <td class="text-end">
+            <form action="{{ url_for('leaveWaiting', sessionId=w.session_id) }}" method="POST" class="d-inline">
+              <button type="submit" class="btn btn-sm btn-outline-secondary">
+                Leave Waiting List
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="text-center py-3 text-muted">
+    <p class="mb-0">You are not on any session waiting lists.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

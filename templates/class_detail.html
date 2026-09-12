@@ -1,0 +1,283 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ cookingClass.title }} - Erdem Cooking School{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('classesCatalog') }}"
+                    class="text-decoration-none">Classes</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ cookingClass.title }}</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 bg-white class-detail-card">
+    <div class="row g-0">
+        <div class="col-lg-7">
+            <div id="classCarousel" class="carousel slide" data-bs-interval="false">
+                <div class="carousel-indicators">
+                    <button type="button" data-bs-target="#classCarousel" data-bs-slide-to="0" class="active"
+                        aria-current="true" aria-label="Photo 1"></button>
+                    {% if cookingClass.photo2 %}
+                    <button type="button" data-bs-target="#classCarousel" data-bs-slide-to="1"
+                        aria-label="Photo 2"></button>
+                    {% endif %}
+                    {% if cookingClass.photo3 %}
+                    <button type="button" data-bs-target="#classCarousel" data-bs-slide-to="2"
+                        aria-label="Photo 3"></button>
+                    {% endif %}
+                </div>
+                <div class="carousel-inner class-detail-carousel-frame">
+                    <div class="carousel-item active">
+                        <img src="{{ url_for('static', filename='images/' ~ cookingClass.photo1) }}"
+                            class="d-block w-100" alt="{{ cookingClass.title }} Photo 1"
+                            onerror="this.onerror=null; this.src='https://placehold.co/800x500/212529/ffc107?text=' + encodeURIComponent('{{ cookingClass.cuisine }} 1');">
+                    </div>
+                    {% if cookingClass.photo2 %}
+                    <div class="carousel-item">
+                        <img src="{{ url_for('static', filename='images/' ~ cookingClass.photo2) }}"
+                            class="d-block w-100" alt="{{ cookingClass.title }} Photo 2"
+                            onerror="this.onerror=null; this.src='https://placehold.co/800x500/212529/ffc107?text=' + encodeURIComponent('{{ cookingClass.cuisine }} 2');">
+                    </div>
+                    {% endif %}
+                    {% if cookingClass.photo3 %}
+                    <div class="carousel-item">
+                        <img src="{{ url_for('static', filename='images/' ~ cookingClass.photo3) }}"
+                            class="d-block w-100" alt="{{ cookingClass.title }} Photo 3"
+                            onerror="this.onerror=null; this.src='https://placehold.co/800x500/212529/ffc107?text=' + encodeURIComponent('{{ cookingClass.cuisine }} 3');">
+                    </div>
+                    {% endif %}
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#classCarousel"
+                    data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#classCarousel"
+                    data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="col-lg-5 p-4 p-md-5 d-flex flex-column justify-content-between">
+            <div>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <span class="badge bg-warning text-dark fw-semibold px-3 py-2 rounded-pill">{{ cookingClass.cuisine
+                        }} Cuisine</span>
+                    <span class="badge bg-secondary px-3 py-2 rounded-pill">{{ cookingClass.difficulty }}</span>
+                    {% if cookingClass.dietary_category and cookingClass.dietary_category != 'None' %}
+                    <span class="badge bg-info text-dark px-3 py-2 rounded-pill">{{ cookingClass.dietary_category
+                        }}</span>
+                    {% endif %}
+                </div>
+
+                <h1 class="h3 fw-bold text-dark mb-2">{{ cookingClass.title }}</h1>
+                <p class="text-secondary mb-3">
+                    <i class="bi bi-person-fill text-warning me-1"></i> Chef <strong>{{ cookingClass.chef }}</strong>
+                </p>
+
+                <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+                    <div class="d-flex align-items-center text-dark">
+                        <i class="bi bi-clock-history fs-5 text-warning me-2"></i>
+                        <div>
+                            <span class="d-block small text-muted">Duration</span>
+                            <strong>{{ cookingClass.duration }} min</strong>
+                        </div>
+                    </div>
+                    <div class="vr"></div>
+                    <div class="d-flex align-items-center text-dark">
+                        <i class="bi bi-star-fill fs-5 text-warning me-2"></i>
+                        <div>
+                            <span class="d-block small text-muted">Average Rating</span>
+                            {% if cookingClass.avg_rating %}
+                            <strong>{{ cookingClass.avg_rating }} / 5</strong> <span class="small text-muted">({{
+                                cookingClass.total_ratings }})</span>
+                            {% else %}
+                            <span class="small text-muted">No ratings yet</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <h2 class="h6 fw-bold text-uppercase text-muted mb-2">About This Class</h2>
+                <p class="text-secondary lh-base mb-0">{{ cookingClass.description }}</p>
+            </div>
+
+            <div class="mt-4 pt-3 border-top small text-muted">
+                <i class="bi bi-shield-check text-success me-1"></i> Supervised by Manager: {{ cookingClass.manager_name
+                }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <i class="bi bi-basket-fill text-warning fs-4"></i>
+                <h2 class="h5 fw-bold mb-0">Key Ingredients</h2>
+            </div>
+            <p class="small text-muted mb-3">Provided fresh at each individual workstation:</p>
+            <ul class="list-group list-group-flush">
+                {% for ing in ingredients %}
+                <li class="list-group-item px-0 py-2 d-flex align-items-center text-secondary border-light">
+                    <i class="bi bi-check-circle-fill text-warning me-2"></i> {{ ing }}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-calendar3 text-warning fs-4"></i>
+                    <h2 class="h5 fw-bold mb-0">Scheduled Weekly Sessions</h2>
+                </div>
+                {% if current_user.is_authenticated and current_user.isManager() and current_user.id ==
+                cookingClass.manager_id %}
+                <a href="{{ url_for('createSession', classId=cookingClass.id) }}"
+                    class="btn btn-sm btn-outline-warning fw-bold">
+                    <i class="bi bi-plus-circle me-1"></i> Add Session
+                </a>
+                {% endif %}
+            </div>
+
+            {% if sessions %}
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col">Schedule</th>
+                            <th scope="col">Session Name</th>
+                            <th scope="col">Availability</th>
+                            <th scope="col" class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in sessions %}
+                        <tr class="{% if s.isPast %}table-light opacity-75{% endif %}">
+                            <td>
+                                <div class="fw-bold text-dark">{{ s.day_of_week }}</div>
+                                <div class="small text-muted">{{ s.start_time }} ({{ cookingClass.duration }} min)</div>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border">{{ s.kitchen }}</span>
+                            </td>
+                            <td>
+                                {% if s.isPast %}
+                                <span class="badge bg-secondary">Concluded</span>
+                                {% elif s.available_seats > 0 %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                    {{ s.available_seats }} / {{ s.capacity }} seats left
+                                </span>
+                                {% else %}
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                                    Full ({{ s.waiting_count }} waiting)
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                {% if s.isPast %}
+                                <span class="text-muted small">Past</span>
+                                {% elif not current_user.is_authenticated %}
+                                <a href="{{ url_for('login', next=url_for('classDetail', classId=cookingClass.id)) }}"
+                                    class="btn btn-sm btn-outline-warning fw-bold">
+                                    Log in to Book
+                                </a>
+                                {% elif current_user.isManager() %}
+                                <span class="text-muted small">Manager View</span>
+                                {% elif s.isUserEnrolled %}
+                                <span class="badge bg-primary text-white py-2 px-3">
+                                    <i class="bi bi-check2-circle me-1"></i> Enrolled
+                                </span>
+                                {% elif s.isUserWaiting %}
+                                <form action="{{ url_for('leaveWaiting', sessionId=s.id) }}" method="POST"
+                                    class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                        Leave Waitlist
+                                    </button>
+                                </form>
+                                {% elif s.available_seats > 0 %}
+                                <form action="{{ url_for('enrollSession', sessionId=s.id) }}" method="POST"
+                                    class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-warning fw-bold px-3">
+                                        Enroll
+                                    </button>
+                                </form>
+                                {% else %}
+                                <form action="{{ url_for('joinWaiting', sessionId=s.id) }}" method="POST"
+                                    class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-warning fw-bold">
+                                        Join Waitlist
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4 text-muted">
+                <i class="bi bi-calendar-x fs-2 d-block mb-2"></i>
+                <p class="mb-0">No active sessions scheduled for this class at this moment.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-chat-square-quote-fill text-warning fs-4"></i>
+            <h2 class="h5 fw-bold mb-0">Verified Student Reviews</h2>
+        </div>
+        {% if cookingClass.avg_rating %}
+        <span class="badge bg-warning fw-bold px-3 py-2">
+            Overall {{ cookingClass.avg_rating }} / 5.0
+        </span>
+        {% endif %}
+    </div>
+
+    {% if ratings %}
+    <div class="row g-3">
+        {% for r in ratings %}
+        <div class="col-12 col-md-6">
+            <div class="p-3 border rounded-3 bg-light h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <strong class="text-dark">{{ r.first_name }} {{ r.last_initial }}</strong>
+                        <span class="small text-muted d-block">{{ r.day_of_week }} session</span>
+                    </div>
+                    <div class="text-warning">
+                        {% for star in range(r.score) %}
+                        <i class="bi bi-star-fill"></i>
+                        {% endfor %}
+                        {% for emptyStar in range(5 - r.score) %}
+                        <i class="bi bi-star text-muted opacity-50"></i>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% if r.comment %}
+                <p class="text-secondary small mb-0 fst-italic">"{{ r.comment }}"</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-4 text-muted">
+        <p class="mb-0">No reviews yet. Students who attend this class will be able to share their experience!</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
